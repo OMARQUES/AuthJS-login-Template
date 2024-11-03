@@ -1,0 +1,12 @@
+{
+    "workbench.editor.customLabels.enabled": true,
+    "workbench.editor.customLabels.patterns": {
+        "*/app/auth/login/page.tsx": "LogIn Page",
+        "*/app/page.tsx": "Home Page",
+        "*/components/auth/login-form.tsx": "Login Form",
+        "*/components/auth/login-button.tsx": "Login button",
+        "*/components/auth/card-wrapper.tsx": "Card Wrapper",
+        "*/app/auth/register/page.tsx": "Register Page",
+        "*/components/auth/register-form.tsx": "Register Form"
+    }
+}
