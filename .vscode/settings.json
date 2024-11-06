@@ -8,6 +8,7 @@
         "*/components/auth/card-wrapper.tsx": "Card Wrapper",
         "*/app/auth/register/page.tsx": "Register Page",
         "*/components/auth/register-form.tsx": "Register Form",
-        "*/app/auth/new-verification/page.tsx": "Verification"
+        "*/app/auth/new-verification/page.tsx": "Verification",
+        "*/app/auth/reset/page.tsx": "Reset Password"
     }
 }

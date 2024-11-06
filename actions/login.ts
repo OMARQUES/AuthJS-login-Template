@@ -1,7 +1,7 @@
 "use server"
 
 import {signIn} from "@/auth"
-import { generateVerificationToken } from "@/data/tokens"
+import { generateVerificationToken } from "@/lib/tokens"
 import { getUserByEmail } from "@/data/user"
 import { sendVerificationEmail } from "@/lib/mail"
 import {DEFAULT_LOGIN_REDIRECT} from "@/routes"
