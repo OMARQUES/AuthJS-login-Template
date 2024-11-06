@@ -10,6 +10,7 @@
         "*/components/auth/register-form.tsx": "Register Form",
         "*/app/auth/new-verification/page.tsx": "Verification",
         "*/app/auth/reset/page.tsx": "Reset Password",
-        "*/app/auth/new-password/page.tsx": "New Password Page"
+        "*/app/auth/new-password/page.tsx": "New Password Page",
+        "*/app/(protected)/settings/page.tsx": "Settings Page"
     }
 }
