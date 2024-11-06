@@ -5,6 +5,7 @@ import authConfig from "./auth.config"
 
 import {db} from "@/lib/db"
 import { getUserByID } from "./data/user"
+import { getTwoFactorConfirmationByUserId } from "./data/twoFactorConfirmation"
 
 declare module "@auth/core" {
   interface Session{
@@ -46,7 +47,16 @@ export const { auth, handlers, signIn, signOut
 
       if(!existingUser?.emailVerified) return false
 
-      //Todo: Add 2FA check
+      if(existingUser.isTwoFactorEnabled){
+        const twoFactorConfirmation = await 
+        getTwoFactorConfirmationByUserId(existingUser.id)
+
+        if(!twoFactorConfirmation) return false
+
+        await db.twoFactorConfirmation.delete({
+          where: { id: twoFactorConfirmation.id }           
+        })
+      }
 
       return true
     },
