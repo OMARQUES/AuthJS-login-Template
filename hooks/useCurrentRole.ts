@@ -2,8 +2,8 @@ import { useSession } from "next-auth/react"
 
 //User em client pages
 
-export const useCurrentUser = () => {
+export const useCurrentRole = () => {
     const session = useSession()
 
-    return session?.data?.user
+    return session.data?.user?.role
 }

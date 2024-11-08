@@ -11,6 +11,9 @@
         "*/app/auth/new-verification/page.tsx": "Verification",
         "*/app/auth/reset/page.tsx": "Reset Password",
         "*/app/auth/new-password/page.tsx": "New Password Page",
-        "*/app/(protected)/settings/page.tsx": "Settings Page"
+        "*/app/(protected)/settings/page.tsx": "Settings Page",
+        "*/app/(protected)/server/page.tsx": "Server Page",
+        "*/app/(protected)/client/page.tsx": "Client Page",
+        "*/app/(protected)/admin/page.tsx": "Admin Page"
     }
 }
