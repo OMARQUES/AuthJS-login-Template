@@ -7,7 +7,7 @@ export default function Home() {
             <div className="space-y-6 text-center">
                 <h1 className="text-6xl font-semibold text-white drop-shadow-md">Auth</h1>
                 <div>
-                    <LoginButton>
+                    <LoginButton mode="modal" asChild>
                         <Button variant='secondary' size='lg'>
                             Sign in
                         </Button>

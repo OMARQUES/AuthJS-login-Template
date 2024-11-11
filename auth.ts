@@ -18,7 +18,7 @@ declare module "@auth/core" {
 
 const prisma = new PrismaClient()
  
-export const { auth, handlers, signIn, signOut, unstable_update
+export const { auth,  handlers: { GET, POST }, signIn, signOut, unstable_update
 
 } = NextAuth({
   pages:{

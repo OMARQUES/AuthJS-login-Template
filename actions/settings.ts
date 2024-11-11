@@ -64,7 +64,7 @@ export const settings = async (
         data: {...values}
     })
 
-    update({
+    await update({
         user: {
             name: updateUser.name,
             email: updateUser.email,

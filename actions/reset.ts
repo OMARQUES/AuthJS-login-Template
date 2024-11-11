@@ -1,5 +1,6 @@
 "use server"
 
+import { getAccountByUserId } from "@/data/account"
 import { getUserByEmail } from "@/data/user"
 import { sendPasswordResetEmail } from "@/lib/mail"
 import { generatePasswordResetToken } from "@/lib/tokens"
@@ -15,10 +16,16 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
 
     const { email } = validadedFields.data
 
-    const existingUser = await getUserByEmail(email)
+    const existingUser = await getUserByEmail(email)    
 
     if(!existingUser){
         return {error: "Email não cadastrado!"}
+    }
+
+    const isOAuth = await getAccountByUserId(existingUser.id)
+
+    if(isOAuth){
+        return {error: "Email vinculado a uma rede social!"}
     }
 
     const passwordResetToken = await generatePasswordResetToken(email)

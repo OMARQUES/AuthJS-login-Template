@@ -3,7 +3,7 @@
 import { newVerification } from "@/actions/new-verification"
 import { CardWrapper } from "./card-wrapper"
 import { useSearchParams } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, useRef } from "react"
 import { BeatLoader } from "react-spinners"
 import { set } from "zod"
 import { FormSuccess } from "../form-success"
@@ -12,6 +12,7 @@ import { FormError } from "../form-error"
 export const NewVerificationForm = () => {
     const [error, setError] = useState<string | undefined>()
     const [success, setSuccess] = useState<string | undefined>()
+    const useEffectCalled = useRef(false)
 
     const searchParams = useSearchParams()
     const token = searchParams.get("token")
@@ -35,7 +36,10 @@ export const NewVerificationForm = () => {
     }, [token, success, error])
 
     useEffect(() => {
-        onSubmit()
+        if(!useEffectCalled.current){
+            useEffectCalled.current = true
+            onSubmit()
+        }
     }, [onSubmit])
 
     return(

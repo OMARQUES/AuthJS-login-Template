@@ -17,12 +17,14 @@ import Link from "next/link"
 
 export const LoginForm = () => {
     const searchParams = useSearchParams()
+    const callbackUrl = searchParams.get("callbackUrl")
     //Verifica se a conta já foi vinculada a outro provedor usando o link de erro da url
     const urlError = searchParams.get("error") === "OAuthAccountNotLinked" 
     ? "Email já cadastrado, tente fazer login de outra forma" 
     : ""
 
     const [showTwoFactor, setShowTwoFactor] = useState(false)
+    const [expectingCode, setExpectingCode] = useState(false)
     const [error, setError] = useState<string | undefined>("")
     const [success, setSuccess] = useState<string | undefined>("")
 
@@ -36,14 +38,25 @@ export const LoginForm = () => {
         }
     })
 
+
+
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
         setError("")
         setSuccess("")
 
         startTransition(() => {
-            login(values)
+            login(values, callbackUrl, expectingCode)
             .then((data) => {
+                if(data?.error == "Codigo de verificação inválido!"){                    
+                    setError(data.error)
+                    return
+                }
+                if(data?.error == "Insira o codigo de verificação!"){                    
+                    setError(data.error)
+                    return
+                }
                 if(data?.error){
+                    setShowTwoFactor(false)
                     form.reset()
                     setError(data.error)
                 }
@@ -53,6 +66,7 @@ export const LoginForm = () => {
                 }
                 if(data?.twoFactor){
                     setShowTwoFactor(true)
+                    setExpectingCode(true)
                 }
             })
             .catch(() => setError("Algo deu errado!"))
@@ -129,7 +143,10 @@ export const LoginForm = () => {
 
                     <FormError message={error || urlError}/>
                     <FormSuccess message={success}/>
-                    <Button type="submit" className="w-full">
+                    <Button 
+                        disabled={isPending}
+                        type="submit" 
+                        className="w-full">
                         {showTwoFactor ? "Confirmar" : "Entrar"}
                     </Button>
                 </form>

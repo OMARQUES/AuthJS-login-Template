@@ -8,11 +8,18 @@ import {DEFAULT_LOGIN_REDIRECT} from "@/routes"
 import {LoginSchema} from "@/schemas"
 import {AuthError} from "next-auth"
 import * as z from "zod"
+import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { getTwoFactorConfirmationByUserId } from "@/data/twoFactorConfirmation"
 import { getTwoFactorTokenByEmail } from "@/data/twoFactorToken"
+import { getAccountByUserId } from "@/data/account"
+import exp from "constants"
 
-export const login = async(values : z.infer < typeof LoginSchema >) => {
+export const login = async(
+    values : z.infer < typeof LoginSchema >,
+    callbackUrl?: string | null,
+    expectingCode?: boolean
+) => {
     const validadeFields = LoginSchema.safeParse(values)
 
     if (!validadeFields.success) {
@@ -26,6 +33,18 @@ export const login = async(values : z.infer < typeof LoginSchema >) => {
     if (!existingUser || !existingUser.email || !existingUser.password) {
         return {error: "Email não cadastrado!"}
     }
+    
+    if (existingUser){
+        const isOAuth = await getAccountByUserId(existingUser.id)
+        if(isOAuth){
+            return {error: "Email vinculado a uma rede social!"}
+        }
+    }
+
+    const passwordMatch = await bcrypt.compare(password, existingUser.password)
+    if(!passwordMatch){
+        return {error: "Credenciais inválidas!"}
+    }
 
     if(!existingUser.emailVerified){
         const verificationToken = await generateVerificationToken(existingUser.email)
@@ -34,7 +53,13 @@ export const login = async(values : z.infer < typeof LoginSchema >) => {
     }
 
     if(existingUser.isTwoFactorEnabled && existingUser.email){
+
+        if(!code && expectingCode){
+            return {error: "Insira o codigo de verificação!"}           
+        }
+
         if(code){
+
             const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email)
             console.log(twoFactorToken)
             
@@ -82,7 +107,7 @@ export const login = async(values : z.infer < typeof LoginSchema >) => {
         await signIn("credentials", {
             email, 
             password, 
-            redirectTo: DEFAULT_LOGIN_REDIRECT
+            redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT
         })
     } catch (error) {
         if (error instanceof AuthError) {
