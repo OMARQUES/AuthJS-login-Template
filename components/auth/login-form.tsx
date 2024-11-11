@@ -20,16 +20,17 @@ export const LoginForm = () => {
     const callbackUrl = searchParams.get("callbackUrl")
     //Verifica se a conta já foi vinculada a outro provedor usando o link de erro da url
     const urlError = searchParams.get("error") === "OAuthAccountNotLinked" 
-    ? "Email já cadastrado, tente fazer login de outra forma" 
-    : ""
+    ? "Email já cadastrado, tente fazer login de outra forma" : ""
+    
+    const urlEmailSend = searchParams.get("emailSend") === "true" 
+    ? "Email de verificação enviado!" : ""
 
     const [showTwoFactor, setShowTwoFactor] = useState(false)
-    const [expectingCode, setExpectingCode] = useState(false)
     const [error, setError] = useState<string | undefined>("")
     const [success, setSuccess] = useState<string | undefined>("")
 
     const [isPending, startTransition] = useTransition()
-
+    
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
         defaultValues: {
@@ -45,15 +46,20 @@ export const LoginForm = () => {
         setSuccess("")
 
         startTransition(() => {
-            login(values, callbackUrl, expectingCode)
-            .then((data) => {
+            login(values, callbackUrl, showTwoFactor)
+            .then((data) => {                
+                if(data?.error == "Insira o codigo de verificação!"){                    
+                    setError(data.error)
+                    return
+                }
                 if(data?.error == "Codigo de verificação inválido!"){                    
                     setError(data.error)
                     return
                 }
-                if(data?.error == "Insira o codigo de verificação!"){                    
+                if(data?.error == "Codigo de verificação expirado!"){                    
+                    setShowTwoFactor(false)
+                    form.reset()                    
                     setError(data.error)
-                    return
                 }
                 if(data?.error){
                     setShowTwoFactor(false)
@@ -66,7 +72,6 @@ export const LoginForm = () => {
                 }
                 if(data?.twoFactor){
                     setShowTwoFactor(true)
-                    setExpectingCode(true)
                 }
             })
             .catch(() => setError("Algo deu errado!"))
@@ -142,7 +147,7 @@ export const LoginForm = () => {
                     </div>
 
                     <FormError message={error || urlError}/>
-                    <FormSuccess message={success}/>
+                    <FormSuccess message={success || urlEmailSend}/>
                     <Button 
                         disabled={isPending}
                         type="submit" 

@@ -1,8 +1,7 @@
 "use server"
 
-import { getUserByEmail, getUserByID } from "@/data/user"
+import { getUserByEmail, getUserByID, updateUserByID } from "@/data/user"
 import { currentUser } from "@/lib/auth"
-import { db } from "@/lib/db"
 import { sendVerificationEmail } from "@/lib/mail"
 import { generateVerificationToken } from "@/lib/tokens"
 import { SettingsSchema } from "@/schemas"
@@ -10,6 +9,7 @@ import { unstable_update as update} from "@/auth"
 
 import * as z from "zod"
 import bcrypt from "bcryptjs"
+import { signOut } from "next-auth/react"
 
 export const settings = async (
     values: z.infer<typeof SettingsSchema>
@@ -40,7 +40,21 @@ export const settings = async (
             return {error: "Email já cadastrado!"}
         }
 
+        const updateEmail = await updateUserByID(
+            user.id, 
+            {
+                email: values.email, 
+                emailVerified: null
+            })
+        
+        if(!updateEmail) return {error: "Erro ao atualizar o email!"}
+
         const verificationToken = await generateVerificationToken(values.email)
+
+        if(!verificationToken){
+            return {error: "Erro ao gerar token de verificação!"}
+        }
+        
         await sendVerificationEmail(verificationToken.email, verificationToken.token)
 
         return {success: "Email de verificação enviado!"}
@@ -59,10 +73,7 @@ export const settings = async (
         values.newPassword = undefined
     }
 
-    const updateUser = await db.user.update({
-        where:{id: dbUser.id},
-        data: {...values}
-    })
+    const updateUser = await updateUserByID(dbUser.id, values)
 
     await update({
         user: {

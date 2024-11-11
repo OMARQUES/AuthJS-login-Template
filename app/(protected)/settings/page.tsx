@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent } 
 from "@/components/ui/card"
 import { GearIcon } from "@radix-ui/react-icons"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { SettingsSchema } from "@/schemas"
@@ -19,8 +19,9 @@ import { FormSuccess } from "@/components/form-success"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { UserRole } from "@prisma/client"
 import { Switch } from "@/components/ui/switch"
+import { logout } from "@/actions/logout"
 
-const SettingsPage =  () => {
+const SettingsPage = () => {
 
     const user = useCurrentUser()
 
@@ -48,7 +49,11 @@ const SettingsPage =  () => {
         
         startTransition(() => {
             settings(values)    
-            .then((data) => {
+            .then(async (data) => {
+                if(data.success === "Email de verificação enviado!"){
+                    await logout("/auth/login?emailSend=true")
+                    return
+                }
                 if(data.error){
                     setError(data.error)
                 }
@@ -219,7 +224,6 @@ const SettingsPage =  () => {
                     </form>
                 </Form>
             </CardContent>
-            
         </Card>
     )
 }

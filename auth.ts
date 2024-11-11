@@ -4,7 +4,7 @@ import { PrismaClient, UserRole } from "@prisma/client"
 import authConfig from "./auth.config"
 
 import {db} from "@/lib/db"
-import { getUserByID } from "./data/user"
+import { getUserByID, updateUserByID } from "./data/user"
 import { getTwoFactorConfirmationByUserId } from "./data/twoFactorConfirmation"
 import { getAccountByUserId } from "./data/account"
 
@@ -27,14 +27,7 @@ export const { auth,  handlers: { GET, POST }, signIn, signOut, unstable_update
   },
   events: {
     async linkAccount({user}){
-      await db.user.update({
-        where: {
-          id: user.id
-        },
-        data: {
-          emailVerified: new Date()
-        }
-      })
+      if(user.id) await updateUserByID(user.id, {emailVerified: new Date()})        
     }
   },
   callbacks: {

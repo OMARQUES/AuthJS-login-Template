@@ -1,11 +1,12 @@
 "use server"
 
 import { getPasswordResetTokenByToken } from "@/data/passwordVerificationToken"
-import { getUserByEmail } from "@/data/user"
+import { getUserByEmail, updateUserByID } from "@/data/user"
 import { NewPasswordSchema } from "@/schemas"
 import * as z from "zod"
 import bcryps from "bcryptjs"
 import { db } from "@/lib/db"
+import { deletePasswordResetToken } from "@/data/twoFactorToken"
 
 export const newPassword = async (
     values: z.infer<typeof NewPasswordSchema>,
@@ -43,15 +44,9 @@ export const newPassword = async (
 
     const hashedPassword = await bcryps.hash(password, 10)
 
-    await db.user.update({
-        where: {id: existingUser.id},
-        data: {password: hashedPassword}
-    })
+    await updateUserByID(existingUser.id, {password: hashedPassword})
 
-    await db.passwordResetToken.delete({
-        where: {id: existingToken.id},
-
-    })
+    deletePasswordResetToken(existingToken)
 
     return { success: "Senha alterada com sucesso!" }
 }

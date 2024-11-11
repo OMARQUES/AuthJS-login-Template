@@ -1,4 +1,40 @@
 import { db } from "@/lib/db"
+import { VerificationToken } from "@prisma/client"
+
+export const createVerificationToken = async (
+    email: string,
+    token: string,
+    expires: Date
+) => {
+    try{
+        const verificationToken = await db.verificationToken.create({
+            data: {
+                email,
+                token,
+                expires
+            }
+        })
+        return verificationToken
+    }
+    catch{
+        return null
+    }
+}
+
+export const deleteVerificationTokenByTokenID = async (
+    existingToken: VerificationToken
+) => {
+    try{
+        await db.verificationToken.delete({
+            where: {
+                id: existingToken.id
+            }
+        })
+    }
+    catch{
+        return null
+    }
+}
 
 export const getVerificationTokenByEmail = async (
     email : string

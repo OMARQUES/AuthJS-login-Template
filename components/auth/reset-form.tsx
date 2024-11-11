@@ -30,9 +30,6 @@ export const ResetForm = () => {
     const onSubmit = (values: z.infer<typeof ResetSchema>) => {
         setError("")
         setSuccess("")
-
-        console.log(values)
-
         
         startTransition(() => {
             reset(values)
@@ -69,7 +66,11 @@ export const ResetForm = () => {
 
                     <FormError message={error}/>
                     <FormSuccess message={success}/>
-                    <Button type="submit" className="w-full">
+                    <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={isPending}
+                    >
                         Enviar email de recuperação
                     </Button>
                 </form>

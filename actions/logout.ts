@@ -1,8 +1,8 @@
 "use server"
 
 import { signOut } from "@/auth"
+import { DEFAULT_LOGIN_PATH } from "@/routes"
 
-export const logout = async () => {
-    //Executar funções do server antes do logOut
-    await signOut({redirectTo: "/auth/login"})
+export const logout = async (path?: string) => {
+    await signOut({ redirectTo: path || DEFAULT_LOGIN_PATH })
 }

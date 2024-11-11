@@ -11,14 +11,13 @@ import * as z from "zod"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { getTwoFactorConfirmationByUserId } from "@/data/twoFactorConfirmation"
-import { getTwoFactorTokenByEmail } from "@/data/twoFactorToken"
+import { deleteTwoFactorToken, getTwoFactorTokenByToken } from "@/data/twoFactorToken"
 import { getAccountByUserId } from "@/data/account"
-import exp from "constants"
 
 export const login = async(
     values : z.infer < typeof LoginSchema >,
     callbackUrl?: string | null,
-    expectingCode?: boolean
+    showTwoFactor?: boolean
 ) => {
     const validadeFields = LoginSchema.safeParse(values)
 
@@ -48,38 +47,35 @@ export const login = async(
 
     if(!existingUser.emailVerified){
         const verificationToken = await generateVerificationToken(existingUser.email)
+        if(!verificationToken){
+            return {error: "Erro ao gerar o codigo de verificação!"}
+        }
         await sendVerificationEmail(verificationToken.email, verificationToken.token)
         return {success: "Codigo de verificação enviado para o seu email!"}
     }
 
     if(existingUser.isTwoFactorEnabled && existingUser.email){
 
-        if(!code && expectingCode){
+        if(!code && showTwoFactor){
             return {error: "Insira o codigo de verificação!"}           
         }
 
         if(code){
 
-            const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email)
-            console.log(twoFactorToken)
-            
-            if(!twoFactorToken){
-                return {error: "Codigo de verificação inválido!"}
-            }
+            const twoFactorToken = await getTwoFactorTokenByToken(code)
 
-            if(twoFactorToken.token !== code){
+            if(!twoFactorToken){
                 return {error: "Codigo de verificação inválido!"}
             }
 
             const hasExpired = new Date(twoFactorToken.expires) < new Date()
 
-            if(hasExpired){
+            if(hasExpired){            
+                await deleteTwoFactorToken(twoFactorToken)    
                 return {error: "Codigo de verificação expirado!"}
             }
 
-            await db.twoFactorToken.delete({
-                where: {id: twoFactorToken.id}
-            })
+            await deleteTwoFactorToken(twoFactorToken)
 
             const existingConfirmation = await 
             getTwoFactorConfirmationByUserId(existingUser.id)

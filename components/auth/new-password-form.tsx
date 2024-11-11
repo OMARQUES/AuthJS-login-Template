@@ -34,9 +34,6 @@ export const NewPasswordForm = () => {
     const onSubmit = (values: z.infer<typeof NewPasswordSchema>) => {
         setError("")
         setSuccess("")
-
-        console.log(values)
-
         
         startTransition(() => {
             newPassword(values, token)
@@ -73,7 +70,11 @@ export const NewPasswordForm = () => {
 
                     <FormError message={error}/>
                     <FormSuccess message={success}/>
-                    <Button type="submit" className="w-full">
+                    <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={isPending}
+                    >
                         Redefinir Senha
                     </Button>
                 </form>
