@@ -11,19 +11,13 @@ import { Button } from "../ui/button"
 import { FormError } from "../form-error"
 import { FormSuccess } from "../form-success"
 import { login } from "@/actions/login"
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 
 export const LoginForm = () => {
     const searchParams = useSearchParams()
     const callbackUrl = searchParams.get("callbackUrl")
-    //Verifica se a conta já foi vinculada a outro provedor usando o link de erro da url
-    const urlError = searchParams.get("error") === "OAuthAccountNotLinked" 
-    ? "Email já cadastrado, tente fazer login de outra forma" : ""
-    
-    const urlEmailSend = searchParams.get("emailSend") === "true" 
-    ? "Email de verificação enviado!" : ""
 
     const [showTwoFactor, setShowTwoFactor] = useState(false)
     const [error, setError] = useState<string | undefined>("")
@@ -39,6 +33,17 @@ export const LoginForm = () => {
         }
     })
 
+    useEffect(() => {
+        //Verifica se a conta já foi vinculada a outro provedor usando o link de erro da url
+        if (searchParams.get("error") === "OAuthAccountNotLinked") {
+            setError("Email já cadastrado, tente fazer login de outra forma")
+        }
+
+        //Email de verificação foi enviado
+        if (searchParams.get("emailSend") === "true") {
+            setSuccess("Email de verificação enviado!")
+        }
+    }, [searchParams])
 
 
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
@@ -85,7 +90,8 @@ export const LoginForm = () => {
             showSocial
         >
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onChange={() => { setError(""); setSuccess(""); }} 
+                onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <div className="space-y-4">
                         {showTwoFactor && (
                             <FormField control={form.control} name="code" render={({field}) => (
@@ -146,8 +152,8 @@ export const LoginForm = () => {
                         )}
                     </div>
 
-                    <FormError message={error || urlError}/>
-                    <FormSuccess message={success || urlEmailSend}/>
+                    <FormError message={error}/>
+                    <FormSuccess message={success}/>
                     <Button 
                         disabled={isPending}
                         type="submit" 

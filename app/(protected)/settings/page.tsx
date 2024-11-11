@@ -50,7 +50,7 @@ const SettingsPage = () => {
         startTransition(() => {
             settings(values)    
             .then(async (data) => {
-                if(data.success === "Email de verificação enviado!"){
+                if(data.emailHasChanged){
                     await logout("/auth/login?emailSend=true")
                     return
                 }

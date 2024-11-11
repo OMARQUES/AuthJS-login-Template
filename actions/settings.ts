@@ -9,11 +9,17 @@ import { unstable_update as update} from "@/auth"
 
 import * as z from "zod"
 import bcrypt from "bcryptjs"
-import { signOut } from "next-auth/react"
 
 export const settings = async (
     values: z.infer<typeof SettingsSchema>
 ) => {
+    var emailHasChanged = false // Logout if email is updated
+
+    const validadeFields = SettingsSchema.safeParse(values)
+
+    if (!validadeFields.success) {
+        return {error: "Dados inválidos!"}
+    }
 
     const user = await currentUser()
     if(!user){
@@ -32,7 +38,7 @@ export const settings = async (
         values.newPassword = undefined
         values.isTwoFactorEnabled = undefined
     }
-
+    
     if(values.email && values.email !== user.email){
         const existingUser = await getUserByEmail(values.email)
 
@@ -40,24 +46,19 @@ export const settings = async (
             return {error: "Email já cadastrado!"}
         }
 
-        const updateEmail = await updateUserByID(
-            user.id, 
-            {
-                email: values.email, 
-                emailVerified: null
-            })
-        
-        if(!updateEmail) return {error: "Erro ao atualizar o email!"}
-
         const verificationToken = await generateVerificationToken(values.email)
 
         if(!verificationToken){
             return {error: "Erro ao gerar token de verificação!"}
         }
         
-        await sendVerificationEmail(verificationToken.email, verificationToken.token)
+        const sendVerificationToken = await sendVerificationEmail(verificationToken.email, verificationToken.token)
 
-        return {success: "Email de verificação enviado!"}
+        if(!sendVerificationToken){
+            return {error: "Erro ao enviar email de verificação!"}
+        }
+
+        emailHasChanged = true
     }
 
     if(values.password && values.newPassword && dbUser.password){
@@ -73,7 +74,12 @@ export const settings = async (
         values.newPassword = undefined
     }
 
-    const updateUser = await updateUserByID(dbUser.id, values)
+    const updateUser = await updateUserByID(dbUser.id, { ...values, emailVerified: emailHasChanged ? null : '' })
+    console.log(updateUser)
+
+    if(!updateUser){
+        return {error: "Erro ao atualizar as configurações!"}
+    }
 
     await update({
         user: {
@@ -84,5 +90,5 @@ export const settings = async (
         }
     })
 
-    return {success: "Configurações salvas!"}
+    return {success: "Configurações salvas!", emailHasChanged}
 }
