@@ -34,7 +34,6 @@ export const updateUserByID = async (
     data: { [key: string]: any }
 ) => {
 
-    console.log(data)
     return await db.user.update({
         where: {
             id: userId

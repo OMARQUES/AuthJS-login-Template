@@ -26,6 +26,21 @@ export const settings = async (
         return {error: "Não autorizado!"}
     }
 
+    if(values.email === user.email &&
+        values.name === user.name &&
+        values.isTwoFactorEnabled === user.isTwoFactorEnabled &&
+        values.role === user.role &&
+        (!values.password || !values.newPassword) &&
+        !user.isOAuth){
+            return {error: "Nenhuma alteração detectada!"}
+        }
+
+    if(values.name === user.name &&
+        values.role === user.role &&
+        user.isOAuth){
+        return {error: "Nenhuma alteração detectada!"}
+    }
+
     const dbUser = await getUserByID(user.id)
 
     if(!dbUser){
@@ -74,8 +89,8 @@ export const settings = async (
         values.newPassword = undefined
     }
 
-    const updateUser = await updateUserByID(dbUser.id, { ...values, emailVerified: emailHasChanged ? null : '' })
-    console.log(updateUser)
+    const updateUser = await updateUserByID(dbUser.id, 
+        { ...values, emailVerified: emailHasChanged ? null : undefined })
 
     if(!updateUser){
         return {error: "Erro ao atualizar as configurações!"}

@@ -59,8 +59,9 @@ const SettingsPage = () => {
                 }
                 if(data.success){
                     update()
+                    //TODO: Reset password fields
                     setSuccess(data.success)
-                }
+                }            
             })   
             .catch(() => setError("Erro ao atualizar configurações!"))     
         })
