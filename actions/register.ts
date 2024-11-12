@@ -2,9 +2,8 @@
 
 import * as z from "zod"
 import bcrypt from "bcryptjs"
-
+import { ERROR, SUCCESS } from "@/utils/constants"
 import { RegisterSchema } from "@/schemas"
-import { db } from "@/lib/db"
 import { createUser, getUserByEmail } from "@/data/user"
 import { generateVerificationToken } from "@/lib/tokens"
 import { sendVerificationEmail } from "@/lib/mail"
@@ -13,7 +12,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     const validadeFields = RegisterSchema.safeParse(values)
 
     if(!validadeFields.success) {
-        return {error: "Credenciais inválidas"}
+        return {error: ERROR.INVALID_CREDENTIALS}
     }
 
     const { email, password, name } = validadeFields.data;
@@ -21,7 +20,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
     const existingUser = await getUserByEmail(email)
     if(existingUser) {
-        return {error: "Email já está em uso!"}
+        return {error: ERROR.EMAIL_IN_USE}
     }
 
     await createUser({name, email, password: hashedPassword})
@@ -29,10 +28,10 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     const verificationToken = await generateVerificationToken(email)
 
     if(!verificationToken) {
-        return {error: "Erro ao gerar token de verificação"}
+        return {error: ERROR.GENERATING_VERIFICATION_CODE}
     }
     
     await sendVerificationEmail(verificationToken.email, verificationToken.token)
 
-    return {success: "Codigo de verificação enviado para o seu email!"}
+    return {success: SUCCESS.VERIFICATION_TOKEN_SENT}
 }

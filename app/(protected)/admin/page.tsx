@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { useCurrentRole } from "@/hooks/useCurrentRole"
 import { UserRole } from "@prisma/client"
 import { toast } from "sonner"
+import { ERROR, SUCCESS } from "@/utils/constants"
 
 const AdminPage = () => {
 
@@ -29,9 +30,9 @@ const AdminPage = () => {
         fetch("/api/admin")
         .then((response) => {
             if (response.ok) {
-                toast.success("Allowed API Route!")
+                toast.success(SUCCESS.SERVER_ACTION)
             } else {
-                toast.error("Forbidden API Route!")
+                toast.error(ERROR.SERVER_ACTION)
             }
         })
     }

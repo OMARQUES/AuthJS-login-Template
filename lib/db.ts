@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { decl } from "postcss";
 
 declare global {
     var prisma: PrismaClient | undefined;

@@ -5,21 +5,21 @@ import { getUserByEmail, updateUserByID } from "@/data/user"
 import { NewPasswordSchema } from "@/schemas"
 import * as z from "zod"
 import bcryps from "bcryptjs"
-import { db } from "@/lib/db"
-import { deletePasswordResetToken } from "@/data/twoFactorToken"
+import { deletePasswordResetTokenWithUserId } from "@/data/twoFactorToken"
+import { ERROR, SUCCESS } from "@/utils/constants"
 
 export const newPassword = async (
     values: z.infer<typeof NewPasswordSchema>,
     token?: string | null
 ) => {
     if(!token) {
-        return { error: "Token não encontrado!" }
+        return { error: ERROR.TOKEN_NOT_FOUND }
     }
 
     const validatedFields = NewPasswordSchema.safeParse(values)
 
     if(!validatedFields.success) {
-        return { error: "Erro de validação!" }
+        return { error: ERROR.VALIDATION_ERROR }
     }
 
     const { password } = validatedFields.data
@@ -27,26 +27,26 @@ export const newPassword = async (
     const existingToken = await getPasswordResetTokenByToken(token)
 
     if(!existingToken) {
-        return { error: "Token inválido!" }
+        return { error: ERROR.INVALID_TOKEN }
     }
 
     const hasExperided = new Date(existingToken.expires) < new Date()
 
     if(hasExperided) {
-        return { error: "Token expirado!" }
+        return { error: ERROR.TOKEN_EXPIRED }
     }
 
     const existingUser = await getUserByEmail(existingToken.email)
 
     if(!existingUser) {
-        return { error: "Email não encontrado!" }
+        return { error: ERROR.EMAIL_NOT_REGISTERED }
     }
 
     const hashedPassword = await bcryps.hash(password, 10)
 
     await updateUserByID(existingUser.id, {password: hashedPassword})
 
-    deletePasswordResetToken(existingToken)
+    deletePasswordResetTokenWithUserId(existingToken)
 
-    return { success: "Senha alterada com sucesso!" }
+    return { success: SUCCESS.PASSWORD_CHANGED }
 }

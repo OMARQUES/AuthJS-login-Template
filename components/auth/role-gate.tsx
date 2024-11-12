@@ -3,6 +3,7 @@
 import { useCurrentRole } from "@/hooks/useCurrentRole"
 import { UserRole } from "@prisma/client"
 import { FormError } from "../form-error"
+import { ERROR } from "../../utils/constants"
 
 interface RoleGateProps {
     children: React.ReactNode,
@@ -18,7 +19,7 @@ export const RoleGate = ({
 
     if (role !== allowedRoles) {
         return (
-            <FormError message="Você não tem permissão para ver esse conteudo!"/>
+            <FormError message={ERROR.PERMISSION_DENIED}/>
         )
     }
 

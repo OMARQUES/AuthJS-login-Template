@@ -6,45 +6,46 @@ import { sendVerificationEmail } from "@/lib/mail"
 import { generateVerificationToken } from "@/lib/tokens"
 import { SettingsSchema } from "@/schemas"
 import { unstable_update as update} from "@/auth"
+import { ERROR, SUCCESS } from "@/utils/constants"
 
-import * as z from "zod"
 import bcrypt from "bcryptjs"
+import * as z from "zod"
 
 export const settings = async (
     values: z.infer<typeof SettingsSchema>
 ) => {
-    var emailHasChanged = false // Logout if email is updated
 
     const validadeFields = SettingsSchema.safeParse(values)
 
     if (!validadeFields.success) {
-        return {error: "Dados inválidos!"}
+        return {error: ERROR.INVALID_DATA}
     }
 
     const user = await currentUser()
     if(!user){
-        return {error: "Não autorizado!"}
+        return {error: ERROR.UNAUTHORIZED}
     }
 
-    if(values.email === user.email &&
-        values.name === user.name &&
-        values.isTwoFactorEnabled === user.isTwoFactorEnabled &&
-        values.role === user.role &&
-        (!values.password || !values.newPassword) &&
-        !user.isOAuth){
-            return {error: "Nenhuma alteração detectada!"}
-        }
+    const emailHasChanged = (values.email !== user?.email) // Logout if email is updated
+    const passwordHasChanged = (values.password !== undefined)
+    const newPasswordHasChanged = (values.newPassword !== undefined)
+    const twoFactorHasChanged = (values.isTwoFactorEnabled !== user?.isTwoFactorEnabled)
+    const roleHasChanged = (values.role !== user?.role)
+    const nameHasChanged = (values.name !== user?.name)
 
-    if(values.name === user.name &&
-        values.role === user.role &&
-        user.isOAuth){
-        return {error: "Nenhuma alteração detectada!"}
+    if(!emailHasChanged && !passwordHasChanged && !newPasswordHasChanged && 
+        !twoFactorHasChanged && !roleHasChanged && !nameHasChanged && !user.isOAuth){
+        return {error: ERROR.NO_CHANGES}
+    }
+
+    if(!nameHasChanged && !roleHasChanged && user.isOAuth){
+        return {error: ERROR.NO_CHANGES}
     }
 
     const dbUser = await getUserByID(user.id)
 
     if(!dbUser){
-        return {error: "Não autorizado!"}
+        return {error: ERROR.UNAUTHORIZED}
     }
 
     if(user.isOAuth){
@@ -58,29 +59,27 @@ export const settings = async (
         const existingUser = await getUserByEmail(values.email)
 
         if(existingUser && existingUser.id !== user.id){
-            return {error: "Email já cadastrado!"}
+            return {error: ERROR.EMAIL_IN_USE}
         }
 
         const verificationToken = await generateVerificationToken(values.email)
 
         if(!verificationToken){
-            return {error: "Erro ao gerar token de verificação!"}
+            return {error: ERROR.GENERATING_VERIFICATION_CODE}
         }
         
         const sendVerificationToken = await sendVerificationEmail(verificationToken.email, verificationToken.token)
 
         if(!sendVerificationToken){
-            return {error: "Erro ao enviar email de verificação!"}
+            return {error: ERROR.EMAIL_VERIFICATION_SENT_ERROR}
         }
-
-        emailHasChanged = true
     }
 
     if(values.password && values.newPassword && dbUser.password){
         const passwordsMatch = await bcrypt.compare(values.password, dbUser.password)
 
         if(!passwordsMatch){
-            return {error: "Senha atual incorreta!"}
+            return {error: ERROR.INVALID_PASSWORD}
         }
 
         const hashedPassword = await bcrypt.hash(values.newPassword, 10)
@@ -93,7 +92,7 @@ export const settings = async (
         { ...values, emailVerified: emailHasChanged ? null : undefined })
 
     if(!updateUser){
-        return {error: "Erro ao atualizar as configurações!"}
+        return {error: ERROR.SETTINGS_UPDATE_ERROR}
     }
 
     await update({
@@ -105,5 +104,5 @@ export const settings = async (
         }
     })
 
-    return {success: "Configurações salvas!", emailHasChanged}
+    return {success: SUCCESS.SETTINGS_SAVED, emailHasChanged}
 }

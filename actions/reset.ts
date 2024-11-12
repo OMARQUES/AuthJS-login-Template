@@ -5,13 +5,14 @@ import { getUserByEmail } from "@/data/user"
 import { sendPasswordResetEmail } from "@/lib/mail"
 import { generatePasswordResetToken } from "@/lib/tokens"
 import { ResetSchema } from "@/schemas"
+import { ERROR, SUCCESS } from "@/utils/constants"
 import * as z from "zod"
 
 export const reset = async (values: z.infer<typeof ResetSchema>) => {
     const validadedFields = ResetSchema.safeParse(values)
 
     if(!validadedFields.success){
-        return {error: "Email inválido!"}
+        return {error: ERROR.INVALID_EMAIL}
     }
 
     const { email } = validadedFields.data
@@ -19,13 +20,13 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
     const existingUser = await getUserByEmail(email)    
 
     if(!existingUser){
-        return {error: "Email não cadastrado!"}
+        return {error: ERROR.EMAIL_NOT_REGISTERED}
     }
 
     const isOAuth = await getAccountByUserId(existingUser.id)
 
     if(isOAuth){
-        return {error: "Email vinculado a uma rede social!"}
+        return {error: ERROR.EMAIL_LINKED_TO_OAUTH}
     }
 
     const passwordResetToken = await generatePasswordResetToken(email)
@@ -34,5 +35,5 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
         passwordResetToken.token
     )
 
-    return {success: "Email de recuperação enviado!"}
+    return {success: SUCCESS.PASSWORD_RESET_EMAIL_SENT}
 }

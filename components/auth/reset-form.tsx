@@ -12,6 +12,7 @@ import { FormError } from "../form-error"
 import { FormSuccess } from "../form-success"
 import { reset } from "@/actions/reset"
 import { useState, useTransition } from "react"
+import { PATH } from "../../utils/constants"
 
 export const ResetForm = () => {
     
@@ -43,7 +44,7 @@ export const ResetForm = () => {
         <CardWrapper
             headerLabel="Esqueceu a senha?"
             backButtonLabel="Fazer Login"
-            backButtonHref="/auth/login"
+            backButtonHref={PATH.LOGIN_PATH}
         >
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

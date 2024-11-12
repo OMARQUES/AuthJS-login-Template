@@ -2,23 +2,24 @@
 
 import { getUserByEmail, updateUserByID } from "@/data/user"
 import { deleteVerificationTokenByTokenID, getVerificationTokenByToken } from "@/data/verificationToken"
+import { ERROR, SUCCESS } from "@/utils/constants"
 
 export const newVerification = async (token: string) => {
     const existingToken = await getVerificationTokenByToken(token)
     if (!existingToken) {
-        return {error: "Token não existe!"}
+        return {error: ERROR.TOKEN_NOT_FOUND}
     }
 
     const hasExpired = new Date(existingToken.expires) < new Date()
 
     if (hasExpired) {
-        return {error: "Token expirado!"}
+        return {error: ERROR.TOKEN_EXPIRED}
     }
 
     const existingUser = await getUserByEmail(existingToken.email)
 
     if (!existingUser) {
-        return {error: "Email não encontrado!"}
+        return {error: ERROR.EMAIL_NOT_REGISTERED}
     }
 
     const updateUser = await updateUserByID(
@@ -28,9 +29,9 @@ export const newVerification = async (token: string) => {
             email: existingToken.email
         })
 
-    if(!updateUser) return {error: "Erro ao verificar o email!"}
+    if(!updateUser) return {error: ERROR.EMAIL_VERIFICATION_ERROR}
 
     await deleteVerificationTokenByTokenID(existingToken)
 
-    return {success: "Email verificado com sucesso!"}
+    return {success: SUCCESS.EMAIL_VERIFIED}
 }

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog"
 import { LoginForm } from "./login-form"
+import { PATH } from "../../utils/constants"
 
 interface LoginButtonProps {
     children : React.ReactNode,
@@ -18,7 +19,7 @@ export const LoginButton = ({
     const router = useRouter()
     
     const onClick = () => {
-        router.push('/auth/login')
+        router.push(PATH.LOGIN_PATH)
     }
 
     if(mode === 'modal'){

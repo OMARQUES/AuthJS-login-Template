@@ -3,10 +3,9 @@
 import * as z from "zod"
 import { settings } from "@/actions/settings"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardContent } 
-from "@/components/ui/card"
+import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { GearIcon } from "@radix-ui/react-icons"
-import { signOut, useSession } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { SettingsSchema } from "@/schemas"
@@ -20,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserRole } from "@prisma/client"
 import { Switch } from "@/components/ui/switch"
 import { logout } from "@/actions/logout"
+import { ERROR, SUCCESS } from "@/utils/constants"
 
 const SettingsPage = () => {
 
@@ -63,7 +63,7 @@ const SettingsPage = () => {
                     setSuccess(data.success)
                 }            
             })   
-            .catch(() => setError("Erro ao atualizar configurações!"))     
+            .catch(() => setError(ERROR.SETTINGS_UPDATE_ERROR))     
         })
     }
 

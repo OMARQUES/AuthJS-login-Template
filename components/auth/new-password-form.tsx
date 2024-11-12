@@ -13,6 +13,8 @@ import { FormSuccess } from "../form-success"
 import { newPassword } from "@/actions/new-password"
 import { useState, useTransition } from "react"
 import { useSearchParams } from "next/navigation"
+import { PATH } from "../../utils/constants"
+
 
 export const NewPasswordForm = () => {
 
@@ -47,7 +49,7 @@ export const NewPasswordForm = () => {
         <CardWrapper
             headerLabel="Escolha uma nova senha"
             backButtonLabel="Fazer Login"
-            backButtonHref="/auth/login"
+            backButtonHref={PATH.LOGIN_PATH}
         >
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

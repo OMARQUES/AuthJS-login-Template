@@ -9,10 +9,10 @@ import {LoginSchema} from "@/schemas"
 import {AuthError} from "next-auth"
 import * as z from "zod"
 import bcrypt from "bcryptjs"
-import { db } from "@/lib/db"
-import { getTwoFactorConfirmationByUserId } from "@/data/twoFactorConfirmation"
-import { deleteTwoFactorToken, getTwoFactorTokenByToken } from "@/data/twoFactorToken"
+import { createTwoFactorConfirmationWithUserId, deleteTwoFactorConfirmationByTokenId, getTwoFactorConfirmationByUserId } from "@/data/twoFactorConfirmation"
+import { deleteTwoFactorTokenByTokenId, getTwoFactorTokenByToken } from "@/data/twoFactorToken"
 import { getAccountByUserId } from "@/data/account"
+import { ERROR, SUCCESS } from "@/utils/constants"
 
 export const login = async(
     values : z.infer < typeof LoginSchema >,
@@ -22,7 +22,7 @@ export const login = async(
     const validadeFields = LoginSchema.safeParse(values)
 
     if (!validadeFields.success) {
-        return {error: "Credenciais inválidas!"}
+        return {error: ERROR.INVALID_CREDENTIALS}
     }
 
     const {email, password, code} = validadeFields.data
@@ -30,34 +30,34 @@ export const login = async(
     const existingUser = await getUserByEmail(email)
 
     if (!existingUser || !existingUser.email || !existingUser.password) {
-        return {error: "Email não cadastrado!"}
+        return {error: ERROR.EMAIL_NOT_REGISTERED}
     }
     
     if (existingUser){
         const isOAuth = await getAccountByUserId(existingUser.id)
         if(isOAuth){
-            return {error: "Email vinculado a uma rede social!"}
+            return {error: ERROR.EMAIL_LINKED_TO_OAUTH}
         }
     }
 
     const passwordMatch = await bcrypt.compare(password, existingUser.password)
     if(!passwordMatch){
-        return {error: "Credenciais inválidas!"}
+        return {error: ERROR.INVALID_CREDENTIALS}
     }
 
     if(!existingUser.emailVerified){
         const verificationToken = await generateVerificationToken(existingUser.email)
         if(!verificationToken){
-            return {error: "Erro ao gerar o codigo de verificação!"}
+            return {error: ERROR.GENERATING_VERIFICATION_CODE}
         }
         await sendVerificationEmail(verificationToken.email, verificationToken.token)
-        return {success: "Codigo de verificação enviado para o seu email!"}
+        return {success: SUCCESS.VERIFICATION_TOKEN_SENT}
     }
 
     if(existingUser.isTwoFactorEnabled && existingUser.email){
 
         if(!code && showTwoFactor){
-            return {error: "Insira o codigo de verificação!"}           
+            return {error: ERROR.TWO_FACTOR_CODE_REQUIRED}           
         }
 
         if(code){
@@ -65,32 +65,24 @@ export const login = async(
             const twoFactorToken = await getTwoFactorTokenByToken(code)
 
             if(!twoFactorToken){
-                return {error: "Codigo de verificação inválido!"}
+                return {error: ERROR.TWO_FACTOR_CODE_INVALID}
             }
 
             const hasExpired = new Date(twoFactorToken.expires) < new Date()
 
             if(hasExpired){            
-                await deleteTwoFactorToken(twoFactorToken)    
-                return {error: "Codigo de verificação expirado!"}
+                await deleteTwoFactorTokenByTokenId(twoFactorToken)    
+                return {error: ERROR.TWO_FACTOR_CODE_EXPIRED}
             }
 
-            await deleteTwoFactorToken(twoFactorToken)
+            await deleteTwoFactorTokenByTokenId(twoFactorToken)
 
             const existingConfirmation = await 
             getTwoFactorConfirmationByUserId(existingUser.id)
 
-            if(existingConfirmation){
-                await db.twoFactorConfirmation.delete({
-                    where: {id: existingConfirmation.id}
-                })
-            }
+            if(existingConfirmation) await deleteTwoFactorConfirmationByTokenId(existingConfirmation.id)
 
-            await db.twoFactorConfirmation.create({
-                data: {
-                    userId: existingUser.id
-                }
-            })
+            await createTwoFactorConfirmationWithUserId(existingUser.id)
             
         }else{
             const twoFactorToken = await generateTwoFactorToken(existingUser.email)
@@ -109,9 +101,9 @@ export const login = async(
         if (error instanceof AuthError) {
             switch (error.type) {
                 case "CredentialsSignin":
-                    return {error: "Credenciais inválidas"}
+                    return {error: ERROR.INVALID_CREDENTIALS}
                 default:
-                    return {error: "Erro desconhecido"}
+                    return {error: ERROR.UNKNOWN_ERROR}
             }
         }
 

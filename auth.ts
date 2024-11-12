@@ -2,11 +2,11 @@ import NextAuth, {type DefaultSession} from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { PrismaClient, UserRole } from "@prisma/client"
 import authConfig from "./auth.config"
-
 import {db} from "@/lib/db"
 import { getUserByID, updateUserByID } from "./data/user"
-import { getTwoFactorConfirmationByUserId } from "./data/twoFactorConfirmation"
+import { deleteTwoFactorConfirmationByTokenId, getTwoFactorConfirmationByUserId } from "./data/twoFactorConfirmation"
 import { getAccountByUserId } from "./data/account"
+import { PATH } from "@/utils/constants"
 
 declare module "@auth/core" {
   interface Session{
@@ -22,8 +22,8 @@ export const { auth,  handlers: { GET, POST }, signIn, signOut, unstable_update
 
 } = NextAuth({
   pages:{
-    signIn: "/auth/login",
-    error: "/auth/error",
+    signIn: PATH.LOGIN_PATH,
+    error: PATH.ERROR_PATH,
   },
   events: {
     async linkAccount({user}){
@@ -47,9 +47,8 @@ export const { auth,  handlers: { GET, POST }, signIn, signOut, unstable_update
 
         if(!twoFactorConfirmation) return false
 
-        await db.twoFactorConfirmation.delete({
-          where: { id: twoFactorConfirmation.id }           
-        })
+        await deleteTwoFactorConfirmationByTokenId(twoFactorConfirmation.id)
+
       }
 
       return true

@@ -5,9 +5,10 @@ import { CardWrapper } from "./card-wrapper"
 import { useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState, useRef } from "react"
 import { BeatLoader } from "react-spinners"
-import { set } from "zod"
 import { FormSuccess } from "../form-success"
 import { FormError } from "../form-error"
+import { ERROR, SUCCESS, PATH } from "../../utils/constants"
+
 
 export const NewVerificationForm = () => {
     const [error, setError] = useState<string | undefined>()
@@ -21,7 +22,7 @@ export const NewVerificationForm = () => {
         if(success || error) return
 
         if (!token) {
-            setError("Token inválido!")
+            setError(ERROR.INVALID_TOKEN)
             return
         }
 
@@ -31,7 +32,7 @@ export const NewVerificationForm = () => {
             setError(data.error)
         })
         .catch(()=>{
-            setError("Algo deu errado!")
+            setError(ERROR.UNKNOWN_ERROR)
         })
     }, [token, success, error])
 
@@ -45,7 +46,7 @@ export const NewVerificationForm = () => {
     return(
         <CardWrapper 
         headerLabel="Confirmando seu email..."
-        backButtonHref="/auth/login"
+        backButtonHref={PATH.LOGIN_PATH}
         backButtonLabel="Fazer Login"
         >
             <div className="flex items-center w-full justify-center">

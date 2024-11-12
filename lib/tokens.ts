@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import {v4 as uuidv4} from 'uuid';
 import { createVerificationToken, deleteVerificationTokenByTokenID, getVerificationTokenByEmail } from '../data/verificationToken';
 import { getPasswordResetTokenByEmail } from '@/data/passwordVerificationToken';
-import { createPasswordResetToken, createTwoFactorToken, deletePasswordResetToken, deleteTwoFactorToken, getTwoFactorTokenByEmail } from '@/data/twoFactorToken';
+import { createPasswordResetToken, createTwoFactorToken, deletePasswordResetTokenWithUserId, deleteTwoFactorTokenByTokenId, getTwoFactorTokenByEmail } from '@/data/twoFactorToken';
 
 export const generateTwoFactorToken = async (
     email: string
@@ -12,7 +12,7 @@ export const generateTwoFactorToken = async (
 
     const existingToken = await getTwoFactorTokenByEmail(email);
 
-    if(existingToken) await deleteTwoFactorToken(existingToken);
+    if(existingToken) await deleteTwoFactorTokenByTokenId(existingToken);
     
     const twoFactorToken = await createTwoFactorToken(email, token, expires);
 
@@ -28,7 +28,7 @@ export const generatePasswordResetToken = async (
 
     const existingToken = await getPasswordResetTokenByEmail(email);
     
-    if(existingToken) await deletePasswordResetToken(existingToken);
+    if(existingToken) await deletePasswordResetTokenWithUserId(existingToken);
 
     const passwordResetToken = await createPasswordResetToken(email, token, expires);
 

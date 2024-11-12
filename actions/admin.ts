@@ -1,15 +1,15 @@
 "use server"
 
 import { currentRole } from "@/lib/auth"
+import { ERROR, SUCCESS } from "@/utils/constants"
 import { UserRole } from "@prisma/client"
-import { error } from "console"
 
 export const admin = async () => {
     const role = await currentRole()
 
     if (role === UserRole.ADMIN) {
-        return {success: "Allowed Server Action!"}
+        return {success: SUCCESS.SERVER_ACTION}
     }
 
-    return {error: "Forbidden Server Action!"}
+    return {error: ERROR.SERVER_ACTION}
 }

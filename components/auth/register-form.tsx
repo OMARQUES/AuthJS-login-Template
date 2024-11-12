@@ -12,6 +12,7 @@ import { FormError } from "../form-error"
 import { FormSuccess } from "../form-success"
 import { register } from "@/actions/register"
 import { useState, useTransition } from "react"
+import { PATH } from "../../utils/constants"
 
 export const RegisterForm = () => {
     const [error, setError] = useState<string | undefined>("")
@@ -44,7 +45,7 @@ export const RegisterForm = () => {
         <CardWrapper
             headerLabel="Criar conta"
             backButtonLabel="Já possui uma conta?"
-            backButtonHref="/auth/login"
+            backButtonHref={PATH.LOGIN_PATH}
             showSocial
         >
             <Form {...form}>

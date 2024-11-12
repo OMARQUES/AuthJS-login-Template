@@ -2,7 +2,6 @@
 
 import { UserInfo } from "@/components/userInfo";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { currentUser } from "@/lib/auth";
 
 const ClientPage = () => {
 
@@ -13,7 +12,7 @@ const ClientPage = () => {
             user={user}
             label="Client component"
         />
-     );
+    );
 }
- 
+
 export default ClientPage;

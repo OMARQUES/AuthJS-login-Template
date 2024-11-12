@@ -61,7 +61,7 @@ export const createPasswordResetToken = async (
     return passwordResetToken
 }
 
-export const deletePasswordResetToken = async (
+export const deletePasswordResetTokenWithUserId = async (
     existingToken: TwoFactorToken
 ) => {
     await db.passwordResetToken.delete({
@@ -71,7 +71,7 @@ export const deletePasswordResetToken = async (
     })
 }
 
-export const deleteTwoFactorToken = async (
+export const deleteTwoFactorTokenByTokenId = async (
     twoFactorToken : TwoFactorToken
 ) => {
     try{

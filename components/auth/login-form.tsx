@@ -13,6 +13,7 @@ import { FormSuccess } from "../form-success"
 import { login } from "@/actions/login"
 import { useEffect, useState, useTransition } from "react"
 import { useSearchParams } from "next/navigation"
+import { ERROR, SUCCESS, PATH } from "../../utils/constants"
 import Link from "next/link"
 
 export const LoginForm = () => {
@@ -36,12 +37,12 @@ export const LoginForm = () => {
     useEffect(() => {
         //Verifica se a conta já foi vinculada a outro provedor usando o link de erro da url
         if (searchParams.get("error") === "OAuthAccountNotLinked") {
-            setError("Email já cadastrado, tente fazer login de outra forma")
+            setError(ERROR.OAUTH_ACCOUNT_NOT_LINKED)
         }
 
         //Email de verificação foi enviado
         if (searchParams.get("emailSend") === "true") {
-            setSuccess("Email de verificação enviado!")
+            setSuccess(SUCCESS.EMAIL_VERIFICATION_SENT)
         }
     }, [searchParams])
 
@@ -53,15 +54,15 @@ export const LoginForm = () => {
         startTransition(() => {
             login(values, callbackUrl, showTwoFactor)
             .then((data) => {                
-                if(data?.error == "Insira o codigo de verificação!"){                    
+                if(data?.error == ERROR.TWO_FACTOR_CODE_REQUIRED){                    
                     setError(data.error)
                     return
                 }
-                if(data?.error == "Codigo de verificação inválido!"){                    
+                if(data?.error == ERROR.TWO_FACTOR_CODE_INVALID){                    
                     setError(data.error)
                     return
                 }
-                if(data?.error == "Codigo de verificação expirado!"){                    
+                if(data?.error == ERROR.TWO_FACTOR_CODE_EXPIRED){                    
                     setShowTwoFactor(false)
                     form.reset()                    
                     setError(data.error)
@@ -79,14 +80,14 @@ export const LoginForm = () => {
                     setShowTwoFactor(true)
                 }
             })
-            .catch(() => setError("Algo deu errado!"))
+            .catch(() => setError(ERROR.UNKNOWN_ERROR))
         })
     }
     return (
         <CardWrapper
             headerLabel="Bem Vindo"
             backButtonLabel="Não possui uma conta?"
-            backButtonHref="/auth/register"
+            backButtonHref={PATH.REGISTER_PATH}
             showSocial
         >
             <Form {...form}>
