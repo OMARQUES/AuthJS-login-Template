@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import {CardWrapper} from "@/src/components/auth/card-wrapper"
-import { LoginSchema } from "@/src/features/auth/register/schemas"
+import { LoginSchema } from "../schemas" 
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form"

@@ -2,7 +2,7 @@
 
 import { getPasswordResetTokenByToken } from "@/src/data/passwordVerificationToken"
 import { getUserByEmail, updateUserByID } from "@/src/data/user"
-import { NewPasswordSchema } from "@/src/features/auth/register/schemas"
+import { NewPasswordSchema } from "../schemas"
 import * as z from "zod"
 import bcryps from "bcryptjs"
 import { deletePasswordResetTokenWithUserId } from "@/src/data/twoFactorToken"

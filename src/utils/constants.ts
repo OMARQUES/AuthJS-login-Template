@@ -54,6 +54,7 @@ export const PATH = {
     NEW_VERIFICATION_PATH: "/auth/new-verification"
 }
 
+export const MODAL= false
 
 //TODOs
 //Corrigir readme e documentação

@@ -2,9 +2,9 @@
 
 import { getAccountByUserId } from "@/src/data/account"
 import { getUserByEmail } from "@/src/data/user"
-import { sendPasswordResetEmail } from "@/src/lib/mail"
-import { generatePasswordResetToken } from "@/src/lib/tokens"
-import { ResetSchema } from "@/src/features/auth/register/schemas"
+import { sendPasswordResetEmail } from "../lib/mail"
+import { generatePasswordResetToken } from "../lib/tokens"
+import { ResetSchema } from "../schemas"
 import { ERROR, SUCCESS } from "@/src/utils/constants"
 import * as z from "zod"
 

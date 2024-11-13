@@ -1,5 +1,6 @@
 import {LoginButton} from "@/src/components/auth/login-button"
 import {Button} from "@/src/components/ui/button"
+import { MODAL } from "../utils/constants"
 
 export default function Home() {
     return (
@@ -7,7 +8,7 @@ export default function Home() {
             <div className="space-y-6 text-center">
                 <h1 className="text-6xl font-semibold text-white drop-shadow-md">Auth</h1>
                 <div>
-                    <LoginButton mode="modal" asChild>
+                    <LoginButton modal={MODAL} asChild>
                         <Button variant='secondary' size='lg'>
                             Login
                         </Button>

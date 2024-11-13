@@ -1,4 +1,4 @@
-import { UserInfo } from "@/src/components/userInfo";
+import { UserInfo } from "@/src/components/auth/userInfo";
 import { currentUser } from "@/src/lib/auth";
 
 const ServerPage = async () => {

@@ -7,13 +7,13 @@ import { PATH } from "../../utils/constants"
 
 interface LoginButtonProps {
     children : React.ReactNode,
-    mode?: 'modal' | 'redirect',
+    modal?: boolean,
     asChild?: boolean
 }
 
 export const LoginButton = ({
     children,
-    mode = 'modal',
+    modal,
     asChild 
 } : LoginButtonProps) => {
     const router = useRouter()
@@ -22,7 +22,7 @@ export const LoginButton = ({
         router.push(PATH.LOGIN_PATH)
     }
 
-    if(mode === 'modal'){
+    if(modal){
         return(
             <Dialog>
                 <DialogTrigger asChild={asChild}>
